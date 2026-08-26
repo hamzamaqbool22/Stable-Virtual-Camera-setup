@@ -6,6 +6,9 @@ outputs/**
 images/**
 !images/.gitkeep
 
+# Leftover nested project copies
+workspace/
+
 # Official SEVA clone (created by setup_vast.sh)
 stable-virtual-camera/
 
