@@ -1,0 +1,10 @@
+name: seva
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - git
+  - ninja
+# PyTorch CUDA wheels are NOT listed here. Install them on Vast.ai with
+# setup_vast.sh so you get torch==2.11.0 + cu128 (not the CUDA 13 PyPI default).

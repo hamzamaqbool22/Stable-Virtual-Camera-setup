@@ -1,0 +1,30 @@
+# Weights and generated media (download / produce these on Vast.ai)
+models/**
+!models/.gitkeep
+outputs/**
+!outputs/.gitkeep
+images/**
+!images/.gitkeep
+
+# Official SEVA clone (created by setup_vast.sh)
+stable-virtual-camera/
+
+# SEVA working directory
+work_dirs/
+
+# Python / conda
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# Hugging Face / torch caches (do not commit)
+.cache/
+*.safetensors
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
