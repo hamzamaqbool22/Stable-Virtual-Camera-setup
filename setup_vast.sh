@@ -126,7 +126,12 @@ log "prefetching SD 2.1 VAE"
 hf download stabilityai/stable-diffusion-2-1-base --include "vae/*" || true
 
 cd "$ROOT"
-mkdir -p "$ROOT/images" "$ROOT/outputs"
+mkdir -p "$ROOT/images" "$ROOT/outputs" "$ROOT/uploads"
+
+log "installing FastAPI (uvicorn on :8000)"
+python -m pip install -r "$ROOT/requirements-api.txt"
+pkill -f "uvicorn main:app" || true
+nohup python -m uvicorn main:app --host 0.0.0.0 --port 8000 > "$ROOT/app.log" 2>&1 &
 
 cat <<EOF
 
@@ -134,9 +139,10 @@ Setup complete.
 
 Next:
   conda activate ${ENV_NAME}
-  # put a car photo in images/
   python generate.py --image images/car.jpg --traj "dolly zoom-in" --profile preview
+  # or open Instance Portal → SEVA API → /docs
 
 Weights: ${MODELS_DIR}/${WEIGHT_FILE}
 SEVA:    ${SEVA_DIR}
+API:     http://0.0.0.0:8000/docs  (log: ${ROOT}/app.log)
 EOF

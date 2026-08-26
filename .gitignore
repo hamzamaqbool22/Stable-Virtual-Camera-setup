@@ -6,6 +6,11 @@ outputs/**
 images/**
 !images/.gitkeep
 
+# API uploads / logs
+uploads/
+app.log
+*.log
+
 # Leftover nested project copies
 workspace/
 

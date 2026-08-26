@@ -17,8 +17,38 @@ This is **not real-time**. Official H100 + compile is ~165s for 80 frames. A 20�
 | `outputs/` | Copied MP4s |
 | `stable-virtual-camera/` | Official repo (cloned by setup) |
 | `generate.py` | Wrapper around official `img2trajvid_s-prob` |
-| `setup_vast.sh` | Conda env + torch cu128 + clone + weights |
+| `main.py` | FastAPI (`POST /generate`, `/docs`) |
+| `onstart.sh` | Paste into Vast On-start Script |
+| `setup_vast.sh` | Conda env + torch cu128 + clone + weights + restart API |
 | `environment.yml` | `seva` env, Python 3.11 (no CUDA torch) |
+
+## Vast.ai template (Jupyter + FastAPI)
+
+Use image `vastai/pytorch:cuda-12.8.1-auto`, launch **Jupyter-python notebook + SSH**, Jupyter Lab, direct HTTPS, **150 GB** disk, `cpu_arch=amd64`.
+
+**Add port `8000` TCP.** Set `JUPYTER_DIR` to `/workspace`.
+
+Append this to `PORTAL_CONFIG` (keep the existing Jupyter/TensorBoard entries):
+
+```
+|localhost:8000:18000:/docs:SEVA API
+```
+
+**On-start Script** — paste the contents of [`onstart.sh`](onstart.sh) (clone this repo, install FastAPI only, start uvicorn on 8000). Do not run `setup_vast.sh` in on-start.
+
+After the instance is **Running**:
+
+1. Instance Portal (1111) → **Jupyter** / **Jupyter Terminal**
+2. Instance Portal → **SEVA API** (`/docs`)
+3. In Jupyter terminal, once:
+
+```bash
+cd /workspace/Stable-Virtual-Camera-setup
+chmod +x setup_vast.sh
+./setup_vast.sh
+```
+
+That installs SEVA in conda env `seva` and **restarts** uvicorn on that Python so `/generate` can use the GPU.
 
 ## Vast.ai setup
 
@@ -139,6 +169,21 @@ Dolly/move paths default `--camera-scale 10`. Override with `--camera-scale 2` i
 
 If VRAM is tight: `--no-compile --encoding-t 1 --decoding-t 1`.
 
-## FastAPI later
+## FastAPI
 
-`generate_video(...)` in `generate.py` is the callable to wrap. Do not import `demo` at process start on Mac; it loads CUDA + VAE + CLIP on import.
+`GET /health` works as soon as uvicorn starts. `POST /generate` needs CUDA + `models/modelv1.1.safetensors` (`ready: true` in `/health`).
+
+```bash
+# after setup_vast.sh
+curl -s http://127.0.0.1:8000/health
+
+curl -X POST http://127.0.0.1:8000/generate \
+  -F "image=@images/front.png" \
+  -F "traj=dolly zoom-in" \
+  -F "profile=preview" \
+  --output out.mp4
+```
+
+React later: `POST /generate` with `multipart/form-data` (`image`, `traj`, `profile`). OpenAPI: `/docs`.
+
+Local `python -m uvicorn main:app` on Mac will serve `/health` but `/generate` will 503 without CUDA.
